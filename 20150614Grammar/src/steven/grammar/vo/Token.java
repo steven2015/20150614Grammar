@@ -8,5 +8,5 @@ package steven.grammar.vo;
  *
  */
 public interface Token{
-	public int matches(String[] input, int offset);
+	public MatchResult matches(String input, int offset);
 }

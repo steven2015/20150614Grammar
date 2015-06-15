@@ -3,6 +3,9 @@
  */
 package steven.grammar.vo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Steven
  *
@@ -11,36 +14,43 @@ public class RecursiveClause implements Token{
 	private final Token body;
 	private final Token appendWhenLoop;
 
-	public RecursiveClause(Token body, Token appendWhenLoop){
+	public RecursiveClause(final Token body, final Token appendWhenLoop){
 		this.body = body;
 		this.appendWhenLoop = appendWhenLoop;
 	}
 	@Override
-	public int matches(String[] input, int offset){
+	public MatchResult matches(final String input, final int offset){
 		int newOffset = offset;
+		final List<MatchResult> results = new ArrayList<>();
 		while(true){
-			int tmp = body.matches(input, newOffset);
-			if(tmp < 0){
-				if(newOffset == offset){
-					return -1;
+			if(this.body != null && this.body != OptionToken.OPTIONAL){
+				final MatchResult bodyResult = this.body.matches(input, newOffset);
+				if(bodyResult.isMatched()){
+					results.add(bodyResult);
+					newOffset = bodyResult.getEnd();
 				}else{
-					return newOffset;
+					if(newOffset == offset){
+						return new MatchFailure(input, offset, newOffset, this, null, (MatchFailure)bodyResult);
+					}else{
+						return new MatchResult(input, offset, newOffset, this, results.toArray(new MatchResult[results.size()]));
+					}
 				}
-			}else{
-				newOffset = tmp;
 			}
-			int tmp2 = appendWhenLoop.matches(input, newOffset);
-			if(tmp2 < 0){
-				return newOffset;
-			}else{
-				newOffset = tmp2;
+			if(this.appendWhenLoop != null && this.appendWhenLoop != OptionToken.OPTIONAL){
+				final MatchResult appendWhenLoopResult = this.appendWhenLoop.matches(input, newOffset);
+				if(appendWhenLoopResult.isMatched()){
+					results.add(appendWhenLoopResult);
+					newOffset = appendWhenLoopResult.getEnd();
+				}else{
+					return new MatchResult(input, offset, newOffset, this, results.toArray(new MatchResult[results.size()]));
+				}
 			}
 		}
 	}
 	public final Token getBody(){
-		return body;
+		return this.body;
 	}
 	public final Token getAppendWhenLoop(){
-		return appendWhenLoop;
+		return this.appendWhenLoop;
 	}
 }
