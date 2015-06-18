@@ -8,6 +8,8 @@ package steven.grammar.vo;
  *
  */
 public class LiteralToken implements Token{
+	public static final Token DOT = new LiteralToken(".", true);
+	public static final Token AT = new LiteralToken("@", true);
 	private final String value;
 	private final boolean caseSensitive;
 	private final Token test;

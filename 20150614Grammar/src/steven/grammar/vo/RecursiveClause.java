@@ -22,17 +22,22 @@ public class RecursiveClause implements Token{
 	public MatchResult matches(final String input, final int offset){
 		int newOffset = offset;
 		final List<MatchResult> results = new ArrayList<>();
+		int resultsSize = 0;
+		int resultsEnd = 0;
 		while(true){
+			final int markOffset = newOffset;
 			if(this.body != null && this.body != OptionToken.OPTIONAL){
 				final MatchResult bodyResult = this.body.matches(input, newOffset);
 				if(bodyResult.isMatched()){
 					results.add(bodyResult);
 					newOffset = bodyResult.getEnd();
+					resultsSize = results.size();
+					resultsEnd = newOffset;
 				}else{
 					if(newOffset == offset){
 						return new MatchFailure(input, offset, newOffset, this, null, (MatchFailure)bodyResult);
 					}else{
-						return new MatchResult(input, offset, newOffset, this, results.toArray(new MatchResult[results.size()]));
+						return new MatchResult(input, offset, resultsEnd, this, results.subList(0, resultsSize).toArray(new MatchResult[resultsSize]));
 					}
 				}
 			}
@@ -44,6 +49,9 @@ public class RecursiveClause implements Token{
 				}else{
 					return new MatchResult(input, offset, newOffset, this, results.toArray(new MatchResult[results.size()]));
 				}
+			}
+			if(markOffset == newOffset){
+				return new MatchFailure(input, offset, newOffset, this, results.toArray(new MatchResult[results.size()]), null);
 			}
 		}
 	}

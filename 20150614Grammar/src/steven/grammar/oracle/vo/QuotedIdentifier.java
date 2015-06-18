@@ -11,24 +11,20 @@ import steven.grammar.vo.Token;
  * @author steven.lam.t.f
  *
  */
-public enum SpaceToken implements Token{
+public enum QuotedIdentifier implements Token{
 	INSTANCE;
-	private SpaceToken(){
+	private QuotedIdentifier(){
 	}
 	@Override
 	public MatchResult matches(final String input, final int offset){
-		int i = offset;
 		final int length = input.length();
-		while(i < length){
-			final char c = input.charAt(i);
-			if(c != ' ' && c != '\t' && c != '\r' && c != '\n'){
-				break;
-			}else{
-				i++;
+		if(offset < length && input.charAt(offset) == '\"'){
+			for(int i = offset + 1; i < length; i++){
+				if(input.charAt(i) == '\"'){
+					return new MatchResult(input, offset, i + 1, this);
+				}
 			}
-		}
-		if(i > offset){
-			return new MatchResult(input, offset, i, this);
+			return new MatchFailure(input, offset, length, this, null, null);
 		}else{
 			return new MatchFailure(input, offset, offset, this, null, null);
 		}
