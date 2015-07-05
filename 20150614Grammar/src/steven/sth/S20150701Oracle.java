@@ -14,9 +14,9 @@ import steven.oracle.grammar.OracleTokenizer;
 public class S20150701Oracle{
 	public static final void main(final String[] args){
 		final String sql = "select trunc(sysdate)||'abc' as \"def\" \r\n123[ from dual";
-		final OracleTokenizer tokenizer = new OracleTokenizer(sql);
-		Token token = null;
 		try{
+			final OracleTokenizer tokenizer = new OracleTokenizer(sql);
+			Token token = null;
 			while((token = tokenizer.next()) != null){
 				System.out.println(token.getClass() + ": " + token);
 			}

@@ -11,6 +11,5 @@ import steven.grammar.exception.GrammarException;
  */
 public interface Tokenizer{
 	public Token next() throws GrammarException;
-	public Token peek() throws GrammarException;
 	public Tokenizer cloneCurrentState();
 }
