@@ -20,7 +20,8 @@ public class OracleTokenizer implements Tokenizer{
 	private final int length;
 	private final int[] startIndexOfLines;
 	private final Token[] tokens;
-	private final State state;
+	private final List<Integer> states = new ArrayList<>();
+	private int nextTokenIndex;
 
 	public OracleTokenizer(final String statement) throws GrammarException{
 		this.statement = statement;
@@ -70,18 +71,27 @@ public class OracleTokenizer implements Tokenizer{
 			}
 			this.tokens = tokens.toArray(new Token[tokens.size()]);
 		}
-		this.state = new State(0);
-	}
-	private OracleTokenizer(){
-		this.statement = null;
-		this.length = 0;
-		this.startIndexOfLines = null;
-		this.tokens = null;
-		this.state = null;
+		this.nextTokenIndex = 0;
 	}
 	@Override
 	public Token next(){
-		return this.state.next();
+		if(this.nextTokenIndex >= this.tokens.length) {
+			return null;
+		}else{
+			return this.tokens[this.nextTokenIndex++];
+		}
+	}
+	@Override
+	public int saveState(){
+		this.states.add(this.nextTokenIndex);
+		return this.states.size() - 1;
+	}
+	@Override
+	public void restoreState(final int state){
+		this.nextTokenIndex = this.states.get(state);
+		for(int i = this.states.size() - 1; i >= state; i--){
+			this.states.remove(i);
+		}
 	}
 	private Token next(final int currentIndex) throws GrammarException{
 		int index = currentIndex;
@@ -213,10 +223,6 @@ public class OracleTokenizer implements Tokenizer{
 		}
 		return null;
 	}
-	@Override
-	public Tokenizer cloneCurrentState(){
-		return this.state.cloneCurrentState();
-	}
 	public Token nextHints(final int currentIndex) throws GrammarException{
 		int index = currentIndex;
 		// space
@@ -332,29 +338,5 @@ public class OracleTokenizer implements Tokenizer{
 		}
 		final int position = index - this.startIndexOfLines[lineIndex] + 1;
 		throw new GrammarException(lineIndex + 1, position, message);
-	}
-
-	private final class State extends OracleTokenizer{
-		private int nextTokenIndex;
-
-		private State(final int nextTokenIndex){
-			this.nextTokenIndex = nextTokenIndex;
-		}
-		@Override
-		public Token next(){
-			if(this.nextTokenIndex >= OracleTokenizer.this.tokens.length) {
-				return null;
-			}else{
-				return OracleTokenizer.this.tokens[this.nextTokenIndex++];
-			}
-		}
-		@Override
-		public Tokenizer cloneCurrentState(){
-			return new State(this.nextTokenIndex);
-		}
-		@Override
-		public Token nextHints(final int currentIndex) throws GrammarException{
-			return OracleTokenizer.this.nextHints(currentIndex);
-		}
 	}
 }
